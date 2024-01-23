@@ -1,6 +1,6 @@
 use super::ParseError;
 
-/// `ddmm.mm``
+/// `ddmm.mm,d`
 pub struct Coordinate {
     degree: f32
 }
