@@ -1,5 +1,6 @@
 use std::time::{Duration, Instant};
 
+// TODO: interior mut
 pub struct Delayed<T> {
     data: Option<T>,
     last_update: Instant,
@@ -34,6 +35,15 @@ impl<T> Delayed<T> {
         }
 
         DelayedResult::Ok(self.data.as_ref().unwrap())
+    }
+
+    pub fn invalidate(&mut self) {
+        self.data = None;
+    }
+
+    pub fn update(&mut self, data: T) {
+        self.data = Some(data);
+        self.last_update = Instant::now();
     }
 
     pub fn with_timeout(self, timeout: Duration) -> Self {
