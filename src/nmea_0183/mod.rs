@@ -5,6 +5,7 @@ use thiserror::Error;
 pub mod coordinate;
 pub mod time;
 
+#[derive(Debug)]
 pub struct GpsMessage {
     /// The two char source of the message.
     /// `GP` is commonly used for a GPS.
