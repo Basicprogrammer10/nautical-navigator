@@ -18,7 +18,7 @@ fn main() {
         .open()
         .expect("Failed to open port");
     let reader = BufReader::new(port);
-    for line in reader.lines() {
-        println!("{}", line.unwrap());
+    for line in reader.lines().map(|x| x.unwrap()) {
+        let msg = nmea_0183::GpsMessage::parse(&line).unwrap();
     }
 }

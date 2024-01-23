@@ -2,6 +2,7 @@ use std::num;
 
 use thiserror::Error;
 
+pub mod coordinate;
 pub mod time;
 
 pub struct GpsMessage {
@@ -57,7 +58,7 @@ impl GpsMessage {
             return Err(ParseError::IncorrectLength);
         }
 
-        let check = &sentence[sentence.len() - 3..];
+        let check = &sentence[sentence.len() - 2..];
         let check = u8::from_str_radix(check, 16)?;
         let calc = checksum(&bytes[0..bytes.len() - 3]);
         if calc != check {
@@ -67,6 +68,7 @@ impl GpsMessage {
         let id = [bytes[1], bytes[2]];
         let packet_type = [bytes[3], bytes[4], bytes[5]];
 
-        todo!()
+        println!("{packet_type:?}");
+        Ok(Self { identifier: id })
     }
 }

@@ -28,6 +28,7 @@ impl Time {
     }
 
     pub fn as_secs(&self) -> f32 {
-        (self.hour * (60 * 60) + self.min * 60 + self.sec.0) as f32 + self.sec.1 as f32 / 100.0
+        (self.hour as u32 * (60 * 60) + self.min as u32 * 60 + self.sec.0 as u32) as f32
+            + self.sec.1 as f32 / 100.0
     }
 }
