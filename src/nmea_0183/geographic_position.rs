@@ -20,17 +20,12 @@ pub enum Status {
 
 impl GeographicPosition {
     pub fn parse(sentence: &[u8]) -> Result<GeographicPosition, ParseError> {
-        let mut parser = Parser::new(sentence);
+        let mut parser = Parser::new(sentence).take_on_parse(',');
         let latitude = parser.parse::<Coordinate>()?;
-        parser.expect(',')?;
         let longitude = parser.parse::<Coordinate>()?;
-        parser.expect(',')?;
         let time = parser.parse::<Time>()?;
-        parser.expect(',')?;
         let status = parser.parse::<Status>()?;
-        parser.expect(',')?;
         let mode = parser.parse::<FaaMode>()?;
-
         parser.assert_empty()?;
 
         Ok(GeographicPosition {

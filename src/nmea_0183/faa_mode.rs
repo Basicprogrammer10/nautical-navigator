@@ -5,7 +5,7 @@ use super::ParseError;
 #[derive(Debug)]
 pub enum FaaMode {
     Autonomous,
-    QuectelQuerkCaution,
+    Caution,
     Differential,
     Estimated,
     RtkFloat,
@@ -14,14 +14,14 @@ pub enum FaaMode {
     Precise,
     RtkInteger,
     Simulated,
-    QuectelQuerkUnsafe,
+    Unsafe,
 }
 
 impl FaaMode {
     pub fn from_char(chr: char) -> Option<Self> {
         Some(match chr {
             'A' => Self::Autonomous,
-            'C' => Self::QuectelQuerkCaution,
+            'C' => Self::Caution,
             'D' => Self::Differential,
             'E' => Self::Estimated,
             'F' => Self::RtkFloat,
@@ -30,7 +30,7 @@ impl FaaMode {
             'P' => Self::Precise,
             'R' => Self::RtkInteger,
             'S' => Self::Simulated,
-            'U' => Self::QuectelQuerkUnsafe,
+            'U' => Self::Unsafe,
             _ => return None,
         })
     }

@@ -1,8 +1,6 @@
-use std::num;
 use std::str;
 
-use anyhow::Context;
-use thiserror::Error;
+use crate::error::ParseError;
 
 use self::geographic_position::GeographicPosition;
 
@@ -42,28 +40,6 @@ fn checksum(sentence: &[u8]) -> u8 {
         out ^= byte;
     }
     out
-}
-
-#[derive(Debug, Error)]
-pub enum ParseError {
-    #[error("The message is missing the `$` prefix")]
-    MissingPrefix,
-    #[error("The length of the input was not long enough")]
-    IncorrectLength,
-    #[error("The message's checksum did not match")]
-    InvalidChecksum,
-    #[error("An integer was invalid")]
-    InvalidNumber(#[from] num::ParseIntError),
-    #[error("A float was invalid")]
-    InvalidFloat(#[from] num::ParseFloatError),
-    #[error("Unknown message type")]
-    UnknownType([u8; 3]),
-    #[error("Non UTF-8 character")]
-    NonUtf8(#[from] std::str::Utf8Error),
-    #[error("Unexpected character")]
-    UnexpectedChar(char),
-    #[error("Parser has remaining data")]
-    RemainingData,
 }
 
 impl GpsMessage {

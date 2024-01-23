@@ -1,13 +1,26 @@
-use crate::nmea_0183::ParseError;
+use crate::error::ParseError;
 
 pub struct Parser<'a> {
     data: &'a [u8],
     index: usize,
+
+    take_on_parse: Option<char>,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(data: &'a [u8]) -> Self {
-        Self { data, index: 0 }
+        Self {
+            data,
+            index: 0,
+            take_on_parse: None,
+        }
+    }
+
+    pub fn take_on_parse(self, c: char) -> Self {
+        Self {
+            take_on_parse: Some(c),
+            ..self
+        }
     }
 
     pub fn assert_empty(&self) -> Result<(), ParseError> {
@@ -90,7 +103,12 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse<T: FromParser<'a>>(&mut self) -> Result<T, ParseError> {
-        T::parse(self)
+        T::parse(self).map(|x| {
+            if let Some(c) = self.take_on_parse {
+                let _ = self.expect(c);
+            }
+            x
+        })
     }
 }
 

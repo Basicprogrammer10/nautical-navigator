@@ -10,9 +10,9 @@ pub struct Coordinate {
 }
 
 impl<'a> FromParser<'a> for Coordinate {
+    // TODO: Fix returning 0.0 when there is no coordinate
     fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
-        dbg!(parser.remaining_str());
-        if parser.peek() == Some(',') {
+        if matches!(parser.peek(), Some(',') | None) {
             return Ok(Self { degree: 0.0 });
         }
 
@@ -27,8 +27,6 @@ impl<'a> FromParser<'a> for Coordinate {
         }
 
         let degrees = str::from_utf8(degrees)?.parse::<f32>()?;
-        dbg!(degrees);
-
         let minutes = str::from_utf8(minutes)?.parse::<f32>()?;
         let negative = direction == 'S' || direction == 'W';
 
