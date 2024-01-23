@@ -1,34 +1,36 @@
+use std::{fmt::Debug, str};
+
+use crate::misc::parser::{FromParser, Parser};
+
 use super::ParseError;
 
 /// In UTC.
 pub struct Time {
     hour: u8,
     min: u8,
-    /// First value is in seconds, second is 10ths of a second.
-    sec: (u8, u8),
+    sec: f32,
 }
 
-impl Time {
-    /// Parses a time from "hhmmss.ss";
-    pub fn parse(time: &str) -> Result<Time, ParseError> {
-        if time.len() != 9 {
-            return Err(ParseError::IncorrectLength);
-        }
+impl<'a> FromParser<'a> for Time {
+    // Parses a time from "hhmmss.ss";
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+        let hour = parser.next_n(2)?;
+        let min = parser.next_n(2)?;
+        let sec = parser.take_until_or_end(',');
 
-        let hour = time[0..2].parse::<u8>()?;
-        let min = time[2..4].parse::<u8>()?;
-        let sec = time[5..7].parse::<u8>()?;
-        let tenths = time[7..9].parse::<u8>()?;
+        let hour = str::from_utf8(hour)?.parse::<u8>()?;
+        let min = str::from_utf8(min)?.parse::<u8>()?;
+        let sec = str::from_utf8(sec)?.parse::<f32>()?;
 
-        Ok(Time {
-            hour,
-            min,
-            sec: (sec, tenths),
-        })
+        Ok(Self { hour, min, sec })
     }
+}
 
-    pub fn as_secs(&self) -> f32 {
-        (self.hour as u32 * (60 * 60) + self.min as u32 * 60 + self.sec.0 as u32) as f32
-            + self.sec.1 as f32 / 100.0
+impl Debug for Time {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "{:02}:{:02}:{:02.2}",
+            self.hour, self.min, self.sec
+        ))
     }
 }

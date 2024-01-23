@@ -30,4 +30,7 @@ pub struct DebugArgs {
     /// Print raw NMEA 0183 messages
     #[clap(short, long)]
     pub raw: bool,
+    /// Ignore message parsing errors
+    #[clap(short, long)]
+    pub ignore_errors: bool,
 }

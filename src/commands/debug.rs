@@ -13,17 +13,27 @@ pub fn run(args: &DebugArgs) -> Result<()> {
         .open()
         .context("Failed to open port")?;
 
-    let reader = BufReader::new(port);
-    for line in reader.lines() {
-        let line = line.context("Failed to read line")?;
+    let mut reader = BufReader::new(port);
+
+    loop {
+        let mut line = Vec::new();
+        reader.read_until(b'\n', &mut line)?;
+        let end = line.len() - 2;
 
         if args.raw {
-            println!("{}", line);
+            println!("{:?}", String::from_utf8_lossy(&line[..end]));
         }
 
-        let msg = nmea_0183::GpsMessage::parse(&line)?;
-        println!("{:?}", msg);
+        let msg = nmea_0183::GpsMessage::parse(&line[..end]);
+        match msg {
+            Ok(msg) => println!("{:?}", msg),
+            Err(err) => {
+                if !args.ignore_errors {
+                    return Err(err.into());
+                } else {
+                    eprintln!("Error: {:?}", err);
+                }
+            }
+        }
     }
-
-    Ok(())
 }
