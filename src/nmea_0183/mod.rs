@@ -30,6 +30,7 @@ pub enum Type {
     /// Geographic Position
     Gll(GeographicPosition),
     Vtg,
+    Txt,
 }
 
 fn checksum(sentence: &[u8]) -> u8 {
