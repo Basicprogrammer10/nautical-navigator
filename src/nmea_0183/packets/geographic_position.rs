@@ -1,6 +1,6 @@
 use crate::misc::parser::{FromParser, Parser};
 
-use super::{coordinate::Coordinate, faa_mode::FaaMode, time::Time, ParseError};
+use super::super::{coordinate::Coordinate, faa_mode::FaaMode, time::Time, ParseError};
 
 /// `ddmm.mm,a,dddmm.mm,a,hhmmss.ss,a,m
 #[derive(Debug)]

@@ -1,3 +1,5 @@
+use std::str;
+
 use crate::error::ParseError;
 
 pub struct Parser<'a> {
@@ -21,6 +23,15 @@ impl<'a> Parser<'a> {
             take_on_parse: Some(c),
             ..self
         }
+    }
+
+    pub fn take_while(&mut self, c: fn(char) -> bool) -> &'a [u8] {
+        let start = self.index;
+        while self.peek().map_or(false, c) {
+            self.index += 1;
+        }
+
+        &self.data[start..self.index]
     }
 
     pub fn assert_empty(&self) -> Result<(), ParseError> {
@@ -114,4 +125,35 @@ impl<'a> Parser<'a> {
 
 pub trait FromParser<'a>: Sized {
     fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError>;
+}
+
+impl<'a> FromParser<'a> for u8 {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+        let bytes = parser.take_while(|c| c.is_ascii_digit());
+        Ok(str::from_utf8(bytes)?.parse::<u8>()?)
+    }
+}
+
+impl<'a> FromParser<'a> for f32 {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+        let bytes = parser.take_while(|c| matches!(c, '.' | '-' | '+' | 'e' | 'E' | '0'..='9'));
+        Ok(str::from_utf8(bytes)?.parse::<f32>()?)
+    }
+}
+
+#[macro_export]
+macro_rules! quick_parser {
+    ($for:ty, {
+        $($chr:literal => $variant:ident),*$(,)?
+    }) => {
+        impl<'a> FromParser<'a> for $for {
+            fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+                let chr = parser.next()?;
+                Ok(match chr {
+                    $($chr => Self::$variant),*,
+                    _ => return Err(ParseError::UnexpectedChar(chr)),
+                })
+            }
+        }
+    };
 }

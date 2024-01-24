@@ -2,11 +2,13 @@ use std::str;
 
 use crate::error::ParseError;
 
-use self::geographic_position::GeographicPosition;
+use packets::geographic_position::GeographicPosition;
+
+use self::packets::active_satellites::ActiveSatellites;
 
 pub mod coordinate;
 pub mod faa_mode;
-pub mod geographic_position;
+pub mod packets;
 pub mod time;
 
 #[derive(Debug)]
@@ -23,7 +25,7 @@ pub struct GpsMessage {
 pub enum Type {
     /// Recommended Minimum Navigation Information.
     Rmc,
-    Gsa,
+    Gsa(ActiveSatellites),
     Gsv,
     /// Geographic Position
     Gll(GeographicPosition),
@@ -64,8 +66,10 @@ impl GpsMessage {
         let id = [bytes[1], bytes[2]];
         let packet_type = [bytes[3], bytes[4], bytes[5]];
 
+        let to_parse = &bytes[7..last];
         let message = match &packet_type {
-            b"GLL" => Type::Gll(GeographicPosition::parse(&bytes[7..last])?),
+            b"GLL" => Type::Gll(GeographicPosition::parse(to_parse)?),
+            b"GSA" => Type::Gsa(ActiveSatellites::parse(to_parse)?),
             _ => return Err(ParseError::UnknownType(packet_type)),
         };
 
