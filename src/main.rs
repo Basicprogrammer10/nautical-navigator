@@ -2,10 +2,8 @@ use anyhow::Result;
 use args::{Args, SubCommand};
 use clap::Parser;
 
-mod app;
 mod args;
 mod commands;
-mod config;
 mod error;
 mod misc;
 mod nmea_0183;
