@@ -13,6 +13,7 @@ impl<'a> FromParser<'a> for Coordinate {
     // TODO: Fix returning 0.0 when there is no coordinate
     fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
         if matches!(parser.peek(), Some(',') | None) {
+            parser.skip_if(',');
             return Ok(Self { degree: 0.0 });
         }
 

@@ -4,7 +4,10 @@ use crate::error::ParseError;
 
 use packets::geographic_position::GeographicPosition;
 
-use self::packets::{active_satellites::ActiveSatellites, text::Text};
+use self::packets::{
+    active_satellites::ActiveSatellites, ground_speed::GroundSpeed,
+    satellites_in_view::SatellitesInView, text::Text,
+};
 
 pub mod coordinate;
 pub mod faa_mode;
@@ -26,10 +29,13 @@ pub enum Type {
     /// Recommended Minimum Navigation Information.
     Rmc,
     Gsa(ActiveSatellites),
-    Gsv,
+    /// Satellites in view
+    Gsv(SatellitesInView),
     /// Geographic Position
     Gll(GeographicPosition),
-    Vtg,
+    /// Track Made Good and Ground Speed.
+    Vtg(GroundSpeed),
+    /// Text for display.
     Txt(Text),
 }
 
@@ -70,7 +76,9 @@ impl GpsMessage {
         let to_parse = &bytes[7..last];
         let message = match &packet_type {
             b"GLL" => Type::Gll(GeographicPosition::parse(to_parse)?),
+            b"GSV" => Type::Gsv(SatellitesInView::parse(to_parse)?),
             b"GSA" => Type::Gsa(ActiveSatellites::parse(to_parse)?),
+            b"VTG" => Type::Vtg(GroundSpeed::parse(to_parse)?),
             b"TXT" => Type::Txt(Text::parse(to_parse)?),
             _ => return Err(ParseError::UnknownType(packet_type)),
         };

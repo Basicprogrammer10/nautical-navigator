@@ -82,6 +82,19 @@ impl<'a> Parser<'a> {
         Ok(())
     }
 
+    pub fn expect_bytes(&mut self, bytes: &[u8]) -> Result<(), ParseError> {
+        let mut i = 0;
+        while i < bytes.len() {
+            if self.next()? != bytes[i] as char {
+                return Err(ParseError::UnexpectedChar(bytes[i] as char));
+            }
+
+            i += 1;
+        }
+
+        Ok(())
+    }
+
     pub fn skip_if(&mut self, c: char) -> bool {
         if self.peek() == Some(c) {
             self.index += 1;
@@ -114,12 +127,11 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse<T: FromParser<'a>>(&mut self) -> Result<T, ParseError> {
-        T::parse(self).map(|x| {
-            if let Some(c) = self.take_on_parse {
-                let _ = self.expect(c);
-            }
-            x
-        })
+        let res = T::parse(self);
+        if let Some(c) = self.take_on_parse {
+            let _ = self.expect(c);
+        }
+        res
     }
 }
 
@@ -131,6 +143,20 @@ impl<'a> FromParser<'a> for u8 {
     fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
         let bytes = parser.take_while(|c| c.is_ascii_digit());
         Ok(str::from_utf8(bytes)?.parse::<u8>()?)
+    }
+}
+
+impl<'a> FromParser<'a> for i8 {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+        let bytes = parser.take_while(|c| matches!(c, '-' | '+' | '0'..='9'));
+        Ok(str::from_utf8(bytes)?.parse::<i8>()?)
+    }
+}
+
+impl<'a> FromParser<'a> for u16 {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+        let bytes = parser.take_while(|c| c.is_ascii_digit());
+        Ok(str::from_utf8(bytes)?.parse::<u16>()?)
     }
 }
 
