@@ -4,7 +4,7 @@ use crate::error::ParseError;
 
 use packets::geographic_position::GeographicPosition;
 
-use self::packets::active_satellites::ActiveSatellites;
+use self::packets::{active_satellites::ActiveSatellites, text::Text};
 
 pub mod coordinate;
 pub mod faa_mode;
@@ -30,7 +30,7 @@ pub enum Type {
     /// Geographic Position
     Gll(GeographicPosition),
     Vtg,
-    Txt,
+    Txt(Text),
 }
 
 fn checksum(sentence: &[u8]) -> u8 {
@@ -71,6 +71,7 @@ impl GpsMessage {
         let message = match &packet_type {
             b"GLL" => Type::Gll(GeographicPosition::parse(to_parse)?),
             b"GSA" => Type::Gsa(ActiveSatellites::parse(to_parse)?),
+            b"TXT" => Type::Txt(Text::parse(to_parse)?),
             _ => return Err(ParseError::UnknownType(packet_type)),
         };
 

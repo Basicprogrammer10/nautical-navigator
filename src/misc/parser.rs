@@ -104,9 +104,9 @@ impl<'a> Parser<'a> {
 
     pub fn take_until_or_end(&mut self, c: char) -> &'a [u8] {
         let start = self.index;
-        while self.next().is_ok() && self.peek() != Some(c) {}
+        while self.peek() != Some(c) && self.next().is_ok() {}
 
-        &self.data[start..self.index - 1]
+        &self.data[start..self.index]
     }
 
     pub fn remaining_str(&self) -> &'a str {
@@ -138,6 +138,31 @@ impl<'a> FromParser<'a> for f32 {
     fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
         let bytes = parser.take_while(|c| matches!(c, '.' | '-' | '+' | 'e' | 'E' | '0'..='9'));
         Ok(str::from_utf8(bytes)?.parse::<f32>()?)
+    }
+}
+
+impl<'a> FromParser<'a> for String {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+        let bytes = parser.take_until_or_end(',');
+
+        // Handle escape codes (^(ascii hex))
+        let mut i = 0;
+        let mut out = String::with_capacity(bytes.len());
+
+        while i < bytes.len() {
+            let c = bytes[i];
+            if c == b'^' {
+                let hex = &bytes[i + 1..i + 3];
+                let hex = u8::from_str_radix(str::from_utf8(hex)?, 16)?;
+                out.push(hex as char);
+                i += 3;
+            } else {
+                out.push(c as char);
+                i += 1;
+            }
+        }
+
+        Ok(out)
     }
 }
 
