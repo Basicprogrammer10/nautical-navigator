@@ -15,17 +15,17 @@ pub mod packets;
 pub mod time;
 
 #[derive(Debug)]
-pub struct GpsMessage {
+pub struct Message {
     /// The two char source of the message.
     /// `GP` is commonly used for a GPS.
     identifier: [u8; 2],
     /// The type of message.
-    message: Type,
+    message: Sentence,
 }
 
 //RMC, GSA, GSV, GLL, VTG
 #[derive(Debug)]
-pub enum Type {
+pub enum Sentence {
     /// Recommended Minimum Navigation Information.
     Rmc,
     Gsa(ActiveSatellites),
@@ -51,9 +51,9 @@ fn checksum(sentence: &[u8]) -> u8 {
     out
 }
 
-impl GpsMessage {
+impl Message {
     // TODO: Just use [u8]?
-    pub fn parse(bytes: &[u8]) -> Result<GpsMessage, ParseError> {
+    pub fn parse(bytes: &[u8]) -> Result<Message, ParseError> {
         if bytes[0] != b'$' {
             return Err(ParseError::MissingPrefix);
         }
@@ -75,11 +75,11 @@ impl GpsMessage {
 
         let to_parse = &bytes[7..last];
         let message = match &packet_type {
-            b"GLL" => Type::Gll(GeographicPosition::parse(to_parse)?),
-            b"GSV" => Type::Gsv(SatellitesInView::parse(to_parse)?),
-            b"GSA" => Type::Gsa(ActiveSatellites::parse(to_parse)?),
-            b"VTG" => Type::Vtg(GroundSpeed::parse(to_parse)?),
-            b"TXT" => Type::Txt(Text::parse(to_parse)?),
+            b"GLL" => Sentence::Gll(GeographicPosition::parse(to_parse)?),
+            b"GSV" => Sentence::Gsv(SatellitesInView::parse(to_parse)?),
+            b"GSA" => Sentence::Gsa(ActiveSatellites::parse(to_parse)?),
+            b"VTG" => Sentence::Vtg(GroundSpeed::parse(to_parse)?),
+            b"TXT" => Sentence::Txt(Text::parse(to_parse)?),
             _ => return Err(ParseError::UnknownType(packet_type)),
         };
 

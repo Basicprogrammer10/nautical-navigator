@@ -24,16 +24,11 @@ pub fn run(args: &DebugArgs) -> Result<()> {
             println!("{:?}", String::from_utf8_lossy(&line[..end]));
         }
 
-        let msg = nmea_0183::GpsMessage::parse(&line[..end]);
+        let msg = nmea_0183::Message::parse(&line[..end]);
         match msg {
             Ok(msg) => println!("{:?}", msg),
-            Err(err) => {
-                if !args.ignore_errors {
-                    return Err(err.into());
-                } else {
-                    eprintln!("Error: {:?}", err);
-                }
-            }
+            Err(err) if !args.ignore_errors => eprintln!("Error: {:?}", err),
+            _ => {}
         }
     }
 }

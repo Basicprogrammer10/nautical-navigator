@@ -1,4 +1,7 @@
-use crate::misc::parser::{FromParser, Parser};
+use crate::{
+    misc::parser::{FromParser, Parser},
+    quick_parser,
+};
 
 use super::super::{coordinate::Coordinate, faa_mode::FaaMode, time::Time, ParseError};
 
@@ -38,13 +41,7 @@ impl GeographicPosition {
     }
 }
 
-impl<'a> FromParser<'a> for Status {
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
-        let chr = parser.next()?;
-        Ok(match chr {
-            'A' => Self::DataValid,
-            'V' => Self::DataInvalid,
-            _ => return Err(ParseError::UnexpectedChar(chr)),
-        })
-    }
-}
+quick_parser!(Status, {
+    'V' => DataInvalid,
+    'A' => DataValid,
+});
