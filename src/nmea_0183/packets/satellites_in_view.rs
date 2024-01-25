@@ -35,9 +35,13 @@ impl SatellitesInView {
         let sentence_number = parser.parse::<u8>()?;
         let in_view = parser.parse::<u16>()?;
 
-        let mut satellites = Vec::with_capacity(total_in_group as usize);
-        for _ in 0..total_in_group {
-            satellites.push(parser.parse::<Satellite>()?);
+        let mut satellites = Vec::new();
+        for _ in 0..4 {
+            match parser.parse::<Satellite>() {
+                Ok(satellite) => satellites.push(satellite),
+                Err(ParseError::Incomplete) => break,
+                Err(err) => return Err(err),
+            }
         }
 
         let satellites = satellites.into_boxed_slice();
@@ -53,7 +57,7 @@ impl SatellitesInView {
 
 impl<'a> FromParser<'a> for Satellite {
     fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
-        let id = parser.parse::<u8>()?;
+        let id = parser.parse::<u8>().ok().ok_or(ParseError::Incomplete)?;
         let elevation = parser.parse::<i8>().ok();
         let azimuth = parser.parse::<u16>().ok();
         let snr = parser.parse::<u8>().ok();

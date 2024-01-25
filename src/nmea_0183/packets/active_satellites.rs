@@ -7,23 +7,23 @@ use crate::{
 #[derive(Debug)]
 pub struct ActiveSatellites {
     /// Current selection mode
-    selection: SelectionMode,
+    pub selection: SelectionMode,
     /// Current fix mode
-    mode: Mode,
+    pub fix: Fix,
     /// IDs of satellites in view
-    satellites: Box<[SatelliteId]>,
+    pub satellites: Box<[SatelliteId]>,
     /// Position (3D) dilution of precision
-    pdop: f32,
+    pub pdop: f32,
     /// Horizontal dilution of precision
-    hdop: f32,
+    pub hdop: f32,
     /// Vertical dilution of precision
-    vdop: f32,
+    pub vdop: f32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct SatelliteId(u8);
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum SelectionMode {
     /// Forced to operate in 2D or 3D mode
     Manual,
@@ -31,8 +31,8 @@ pub enum SelectionMode {
     Automatic,
 }
 
-#[derive(Debug)]
-pub enum Mode {
+#[derive(Debug, Clone, Copy)]
+pub enum Fix {
     /// No fix available
     NoFix,
     /// 2D fix
@@ -45,7 +45,7 @@ impl ActiveSatellites {
     pub fn parse(sentence: &[u8]) -> Result<ActiveSatellites, ParseError> {
         let mut parser = Parser::new(sentence).take_on_parse(',');
         let selection = parser.parse::<SelectionMode>()?;
-        let mode = parser.parse::<Mode>()?;
+        let mode = parser.parse::<Fix>()?;
 
         let mut satellites = Vec::new();
         for _ in 0..12 {
@@ -63,7 +63,7 @@ impl ActiveSatellites {
         let satellites = satellites.into_boxed_slice();
         Ok(ActiveSatellites {
             selection,
-            mode,
+            fix: mode,
             satellites,
             pdop,
             hdop,
@@ -77,7 +77,7 @@ quick_parser!(SelectionMode, {
     'M' => Manual,
 });
 
-quick_parser!(Mode, {
+quick_parser!(Fix, {
     '1' => NoFix,
     '2' => Fix2D,
     '3' => Fix3D,

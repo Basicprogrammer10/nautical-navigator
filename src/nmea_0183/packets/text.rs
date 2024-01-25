@@ -2,10 +2,10 @@ use crate::{error::ParseError, misc::parser::Parser};
 
 #[derive(Debug)]
 pub struct Text {
-    total_sentences: u8,
-    sentence_number: u8,
-    text_identifier: u8,
-    message: String,
+    pub total_sentences: u8,
+    pub sentence_number: u8,
+    pub text_identifier: u8,
+    pub message: String,
 }
 
 impl Text {

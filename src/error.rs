@@ -22,4 +22,6 @@ pub enum ParseError {
     UnexpectedChar(char),
     #[error("Parser has remaining data")]
     RemainingData,
+    #[error("Incomplete data")]
+    Incomplete,
 }

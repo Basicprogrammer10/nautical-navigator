@@ -5,10 +5,21 @@ use crate::misc::parser::{FromParser, Parser};
 use super::ParseError;
 
 /// In UTC.
+#[derive(Clone, Copy)]
 pub struct Time {
     hour: u8,
     min: u8,
     sec: f32,
+}
+
+impl Time {
+    pub fn new() -> Self {
+        Self {
+            hour: 0,
+            min: 0,
+            sec: 0.0,
+        }
+    }
 }
 
 impl<'a> FromParser<'a> for Time {

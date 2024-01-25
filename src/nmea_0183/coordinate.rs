@@ -5,8 +5,15 @@ use crate::misc::parser::{FromParser, Parser};
 use super::ParseError;
 
 /// `ddmm.mm,d`
+#[derive(Clone, Copy)]
 pub struct Coordinate {
-    degree: f32,
+    pub degree: f32,
+}
+
+impl Coordinate {
+    pub fn new() -> Self {
+        Self { degree: 0.0 }
+    }
 }
 
 impl<'a> FromParser<'a> for Coordinate {

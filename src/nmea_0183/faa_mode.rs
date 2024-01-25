@@ -2,7 +2,7 @@ use crate::misc::parser::{FromParser, Parser};
 
 use super::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum FaaMode {
     Autonomous,
     Caution,

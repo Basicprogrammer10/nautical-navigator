@@ -1,12 +1,16 @@
 use std::mem;
 
-use crate::nmea_0183::packets::satellites_in_view::{Satellite, SatellitesInView};
+use crate::nmea_0183::{
+    packets::satellites_in_view::{Satellite, SatellitesInView},
+    Sentence,
+};
 
 pub struct Satellites {
     /// Number of satellites in view.
     pub in_view: u16,
     /// The satellites in view.
     pub satellites: Vec<Satellite>,
+
     /// Holds the new satellites until the last sentence is received.
     new_satellites: Vec<Satellite>,
 }
@@ -16,7 +20,6 @@ impl Satellites {
         Self {
             in_view: 0,
             satellites: Vec::new(),
-
             new_satellites: Vec::new(),
         }
     }
@@ -25,7 +28,13 @@ impl Satellites {
         self.satellites.iter().filter(|x| x.snr.is_some()).count() as u8
     }
 
-    pub fn handle(&mut self, sentence: SatellitesInView) {
+    pub fn handle(&mut self, sentence: &Sentence) {
+        if let Sentence::Gsv(sentence) = sentence {
+            self.handle_inner(sentence);
+        }
+    }
+
+    fn handle_inner(&mut self, sentence: &SatellitesInView) {
         if sentence.total_in_group == sentence.sentence_number {
             mem::swap(&mut self.new_satellites, &mut self.satellites);
             self.new_satellites.clear();

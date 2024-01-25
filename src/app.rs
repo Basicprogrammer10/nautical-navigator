@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use egui::{Color32, RichText, TopBottomPanel, Window};
 use parking_lot::Mutex;
@@ -18,6 +18,8 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        ctx.request_repaint_after(Duration::from_millis(100));
+
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.heading("Nautical Navigator");
         });
@@ -48,6 +50,20 @@ impl eframe::App for App {
                     },
                 );
             }
+        });
+
+        Window::new("Position").show(ctx, |ui| {
+            let store = self.store.lock();
+            let location = &store.location;
+
+            ui.label(format!("Latitude: {:?}", location.latitude));
+            ui.label(format!("Longitude: {:?}", location.longitude));
+            ui.label(format!("Time: {:?}", location.time));
+            ui.label(format!("Status: {:?}", location.status));
+            ui.label(format!("Fix: {:?}", location.fix));
+            ui.label(format!("PDOP: {}", location.pdop));
+            ui.label(format!("HDOP: {}", location.hdop));
+            ui.label(format!("VDOP: {}", location.vdop));
         });
     }
 }

@@ -8,14 +8,14 @@ use super::super::{coordinate::Coordinate, faa_mode::FaaMode, time::Time, ParseE
 /// `ddmm.mm,a,dddmm.mm,a,hhmmss.ss,a,m
 #[derive(Debug)]
 pub struct GeographicPosition {
-    latitude: Coordinate,
-    longitude: Coordinate,
-    time: Time,
-    status: Status,
-    mode: FaaMode,
+    pub latitude: Coordinate,
+    pub longitude: Coordinate,
+    pub time: Time,
+    pub status: Status,
+    pub mode: FaaMode,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Status {
     DataValid,
     DataInvalid,
