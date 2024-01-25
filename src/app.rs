@@ -1,0 +1,53 @@
+use std::sync::Arc;
+
+use egui::{Color32, RichText, TopBottomPanel, Window};
+use parking_lot::Mutex;
+
+use crate::{args::RunArgs, misc::nullable::Nullable, nmea_0183::stores::Store};
+
+pub struct App {
+    pub args: RunArgs,
+    pub store: Arc<Mutex<Store>>,
+}
+
+impl App {
+    pub fn new(args: RunArgs, store: Arc<Mutex<Store>>) -> Self {
+        Self { args, store }
+    }
+}
+
+impl eframe::App for App {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        TopBottomPanel::top("top_panel").show(ctx, |ui| {
+            ui.heading("Nautical Navigator");
+        });
+
+        Window::new("Satellites").show(ctx, |ui| {
+            let store = self.store.lock();
+            let satellites = &store.satellites;
+
+            ui.label(format!("Satellites in view: {}", satellites.in_view));
+            ui.label(format!("Connected: {}", satellites.connected()));
+            ui.separator();
+            ui.label("Satellites:");
+
+            for satellite in &satellites.satellites {
+                let color = if satellite.snr.is_some() {
+                    Color32::PLACEHOLDER
+                } else {
+                    Color32::DARK_GRAY
+                };
+
+                ui.collapsing(
+                    RichText::new(format!("Satellite {}", satellite.id)).color(color),
+                    |ui| {
+                        ui.label(format!("ID: {}", satellite.id));
+                        ui.label(format!("Elevation: {}", Nullable(satellite.elevation)));
+                        ui.label(format!("Azimuth: {}", Nullable(satellite.azimuth)));
+                        ui.label(format!("SNR: {}", Nullable(satellite.snr)));
+                    },
+                );
+            }
+        });
+    }
+}

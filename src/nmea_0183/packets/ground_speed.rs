@@ -7,9 +7,9 @@ pub struct GroundSpeed {
     /// Course over ground, magnetic.
     course_magnetic: Option<f32>,
     /// Speed over ground, knots.
-    speed_knots: f32,
+    speed_knots: Option<f32>,
     /// Speed over ground, kilometers per hour.
-    speed_kph: f32,
+    speed_kph: Option<f32>,
     /// FAA mode.
     faa_mode: FaaMode,
 }
@@ -18,13 +18,17 @@ impl GroundSpeed {
     pub fn parse(sentence: &[u8]) -> Result<GroundSpeed, ParseError> {
         let mut parser = Parser::new(sentence).take_on_parse(',');
         let course_true = parser.parse::<f32>().ok();
-        parser.expect_bytes(b"T,")?;
+        parser.skip_if('T');
+        parser.expect(',')?;
         let course_magnetic = parser.parse::<f32>().ok();
-        parser.expect_bytes(b"M,")?;
-        let speed_knots = parser.parse::<f32>()?;
-        parser.expect_bytes(b"N,")?;
-        let speed_kph = parser.parse::<f32>()?;
-        parser.expect_bytes(b"K,")?;
+        parser.skip_if('M');
+        parser.expect(',')?;
+        let speed_knots = parser.parse::<f32>().ok();
+        parser.skip_if('N');
+        parser.expect(',')?;
+        let speed_kph = parser.parse::<f32>().ok();
+        parser.skip_if('K');
+        parser.expect(',')?;
         let faa_mode = parser.parse::<FaaMode>()?;
         parser.assert_empty()?;
 

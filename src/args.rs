@@ -12,6 +12,8 @@ pub enum SubCommand {
     Devices(DevicesArgs),
     /// Prints decoded NMEA 0183 messages from a serial device
     Debug(DebugArgs),
+    /// Runs the main desktop application
+    Run(RunArgs),
 }
 
 #[derive(Parser, Debug)]
@@ -33,4 +35,16 @@ pub struct DebugArgs {
     /// Ignore message parsing errors
     #[clap(short, long)]
     pub ignore_errors: bool,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct RunArgs {
+    /// Serial device to read from
+    pub device: String,
+    /// Baud rate to use
+    #[clap(short, long, default_value = "4800")]
+    pub baud_rate: u32,
+    /// Time to wait for a message before timing out (in seconds)
+    #[clap(short, long, default_value = "2")]
+    pub timeout: f32,
 }

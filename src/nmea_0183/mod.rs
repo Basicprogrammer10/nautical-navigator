@@ -12,15 +12,16 @@ use self::packets::{
 pub mod coordinate;
 pub mod faa_mode;
 pub mod packets;
+pub mod stores;
 pub mod time;
 
 #[derive(Debug)]
 pub struct Message {
     /// The two char source of the message.
     /// `GP` is commonly used for a GPS.
-    identifier: [u8; 2],
+    pub identifier: [u8; 2],
     /// The type of message.
-    message: Sentence,
+    pub message: Sentence,
 }
 
 //RMC, GSA, GSV, GLL, VTG
