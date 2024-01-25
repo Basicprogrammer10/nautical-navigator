@@ -33,22 +33,24 @@ impl eframe::App for App {
             ui.separator();
             ui.label("Satellites:");
 
-            for satellite in &satellites.satellites {
+            for (i, satellite) in satellites.satellites.iter().enumerate() {
                 let color = if satellite.snr.is_some() {
                     Color32::PLACEHOLDER
                 } else {
                     Color32::DARK_GRAY
                 };
 
-                ui.collapsing(
-                    RichText::new(format!("Satellite {}", satellite.id)).color(color),
-                    |ui| {
-                        ui.label(format!("ID: {}", satellite.id));
-                        ui.label(format!("Elevation: {}", Nullable(satellite.elevation)));
-                        ui.label(format!("Azimuth: {}", Nullable(satellite.azimuth)));
-                        ui.label(format!("SNR: {}", Nullable(satellite.snr)));
-                    },
-                );
+                ui.push_id(i, |ui| {
+                    ui.collapsing(
+                        RichText::new(format!("Satellite {}", satellite.id)).color(color),
+                        |ui| {
+                            ui.label(format!("ID: {}", satellite.id));
+                            ui.label(format!("Elevation: {}", Nullable(satellite.elevation)));
+                            ui.label(format!("Azimuth: {}", Nullable(satellite.azimuth)));
+                            ui.label(format!("SNR: {}", Nullable(satellite.snr)));
+                        },
+                    )
+                });
             }
         });
 

@@ -35,12 +35,13 @@ impl Satellites {
     }
 
     fn handle_inner(&mut self, sentence: &SatellitesInView) {
+        self.in_view = sentence.in_view;
+        self.new_satellites
+            .extend(sentence.satellites.iter().cloned());
+
         if sentence.total_in_group == sentence.sentence_number {
             mem::swap(&mut self.new_satellites, &mut self.satellites);
             self.new_satellites.clear();
         }
-
-        self.in_view = sentence.in_view;
-        self.satellites.extend(sentence.satellites.iter().cloned());
     }
 }
