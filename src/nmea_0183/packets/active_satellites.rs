@@ -53,7 +53,7 @@ impl ActiveSatellites {
                 satellites.push(SatelliteId(parser.parse::<u8>()?));
                 continue;
             }
-            parser.skip(1);
+            parser.expect(',')?;
         }
 
         let pdop = parser.parse::<f32>()?;
