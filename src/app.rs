@@ -19,15 +19,23 @@ impl App {
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         ctx.request_repaint_after(Duration::from_millis(100));
+        let store = self.store.lock();
 
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            ui.heading("Nautical Navigator");
+            ui.horizontal(|ui| {
+                ui.heading("Nautical Navigator");
+            });
+        });
+
+        TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.label(format!("[ {} ]", self.args.device));
+                ui.label(format!("[ {:?} ]", store.location.fix));
+            });
         });
 
         Window::new("Satellites").show(ctx, |ui| {
-            let store = self.store.lock();
             let satellites = &store.satellites;
-
             ui.label(format!("Satellites in view: {}", satellites.in_view));
             ui.label(format!("Connected: {}", satellites.connected()));
             ui.separator();
@@ -55,9 +63,7 @@ impl eframe::App for App {
         });
 
         Window::new("Position").show(ctx, |ui| {
-            let store = self.store.lock();
             let location = &store.location;
-
             ui.label(format!("Latitude: {:?}", location.latitude));
             ui.label(format!("Longitude: {:?}", location.longitude));
             ui.label(format!("Time: {:?}", location.time));
