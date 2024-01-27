@@ -1,9 +1,12 @@
 use std::{sync::Arc, time::Duration};
 
 use egui::{Color32, RichText, SidePanel, TopBottomPanel, Window};
+use egui_plot::{Line, Plot};
 use parking_lot::Mutex;
 
-use crate::{args::RunArgs, misc::nullable::Nullable, nmea_0183::stores::Store};
+use crate::{
+    args::RunArgs, consts::HISTORY_SAMPLES, misc::nullable::Nullable, nmea_0183::stores::Store,
+};
 
 pub struct App {
     pub args: RunArgs,
@@ -58,11 +61,29 @@ impl eframe::App for App {
         if self.show_satellites {
             Window::new("Satellites").show(ctx, |ui| {
                 let satellites = &store.satellites;
+
+                ui.heading("Overview");
                 ui.label(format!("Satellites in view: {}", satellites.in_view));
                 ui.label(format!("Connected: {}", satellites.connected()));
-                ui.separator();
-                ui.label("Satellites:");
 
+                ui.add_space(12.0);
+                ui.heading("SNR History");
+                let line = Line::new(
+                    store
+                        .satellites
+                        .avg_sdr_history
+                        .iter()
+                        .enumerate()
+                        .map(|x| [x.0 as f64 - HISTORY_SAMPLES as f64, *x.1 as f64])
+                        .collect::<Vec<_>>(),
+                );
+                Plot::new("snr_history")
+                    .allow_drag(false)
+                    .view_aspect(2.0)
+                    .show(ui, |plot_ui| plot_ui.line(line));
+
+                ui.add_space(12.0);
+                ui.heading("Satellites");
                 for (i, satellite) in satellites.satellites.iter().enumerate() {
                     let color = if satellite.snr.is_some() {
                         Color32::PLACEHOLDER

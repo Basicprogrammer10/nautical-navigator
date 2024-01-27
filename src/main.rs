@@ -5,6 +5,7 @@ use clap::Parser;
 mod app;
 mod args;
 mod commands;
+mod consts;
 mod error;
 mod misc;
 mod nmea_0183;

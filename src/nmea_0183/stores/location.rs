@@ -33,7 +33,7 @@ impl Location {
         }
     }
 
-    pub fn handle(&mut self, sentence: &crate::nmea_0183::Sentence) {
+    pub fn handle(&mut self, sentence: &Sentence) {
         match sentence {
             Sentence::Gll(sentence) => self.handle_pos_inner(sentence),
             Sentence::Gsa(sentence) => self.handel_active_satellites(sentence),

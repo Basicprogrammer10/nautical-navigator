@@ -44,7 +44,7 @@ impl<'a> Parser<'a> {
 
     pub fn next(&mut self) -> Result<char, ParseError> {
         if self.index >= self.data.len() {
-            return Err(ParseError::IncorrectLength);
+            return Err(ParseError::Incomplete);
         }
 
         let out = self.data[self.index] as char;
@@ -62,7 +62,7 @@ impl<'a> Parser<'a> {
 
     pub fn next_n(&mut self, n: usize) -> Result<&'a [u8], ParseError> {
         if self.index + n >= self.data.len() {
-            return Err(ParseError::IncorrectLength);
+            return Err(ParseError::Incomplete);
         }
 
         let out = &self.data[self.index..self.index + n];
