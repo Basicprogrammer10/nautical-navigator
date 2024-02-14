@@ -1,6 +1,6 @@
 use std::{sync::Arc, time::Duration};
 
-use egui::{Color32, RichText, ScrollArea, SidePanel, TopBottomPanel, Window};
+use egui::{Align, Color32, Layout, RichText, ScrollArea, SidePanel, TopBottomPanel, Window};
 use egui_plot::{Line, Plot};
 use parking_lot::Mutex;
 
@@ -45,6 +45,9 @@ impl eframe::App for App {
                 ui.heading("Nautical Navigator");
                 ui.separator();
                 ui.toggle_value(&mut self.show_windows, "🗖 Windows");
+                if ui.button("Organize windows").clicked() {
+                    ui.ctx().memory_mut(|mem| mem.reset_areas());
+                }
             });
         });
 
@@ -56,12 +59,17 @@ impl eframe::App for App {
         });
 
         if self.show_windows {
-            SidePanel::right("windows_panel").show(ctx, |ui| {
-                ui.heading("Windows");
-                ui.separator();
-                ui.toggle_value(&mut self.show_satellites, "🚀 Satellites");
-                ui.toggle_value(&mut self.show_location, "📍 Position");
-            });
+            SidePanel::right("windows_panel")
+                .default_width(100.0)
+                .show(ctx, |ui| {
+                    ui.heading("Windows");
+                    ui.separator();
+                    ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
+                        ui.toggle_value(&mut self.show_log, "📜 Log");
+                        ui.toggle_value(&mut self.show_satellites, "🚀 Satellites");
+                        ui.toggle_value(&mut self.show_location, "📍 Position");
+                    });
+                });
         }
 
         if self.show_satellites {
@@ -127,7 +135,7 @@ impl eframe::App for App {
         }
 
         if self.show_log {
-            Window::new("Log").show(ctx, |ui| {
+            Window::new("Log").default_width(800.0).show(ctx, |ui| {
                 let entries = self.log.entries();
 
                 ScrollArea::vertical().show(ui, |ui| {
