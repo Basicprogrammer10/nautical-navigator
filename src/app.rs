@@ -1,28 +1,34 @@
 use std::{sync::Arc, time::Duration};
 
-use egui::{Color32, RichText, SidePanel, TopBottomPanel, Window};
+use egui::{Color32, RichText, ScrollArea, SidePanel, TopBottomPanel, Window};
 use egui_plot::{Line, Plot};
 use parking_lot::Mutex;
 
 use crate::{
-    args::RunArgs, consts::HISTORY_SAMPLES, misc::nullable::Nullable, nmea_0183::stores::Store,
+    args::RunArgs, consts::HISTORY_SAMPLES, log::Log, misc::nullable::Nullable,
+    nmea_0183::stores::Store,
 };
 
 pub struct App {
     pub args: RunArgs,
+    pub log: Log,
     pub store: Arc<Mutex<Store>>,
 
     show_windows: bool,
+    show_log: bool,
     show_satellites: bool,
     show_location: bool,
 }
 
 impl App {
-    pub fn new(args: RunArgs, store: Arc<Mutex<Store>>) -> Self {
+    pub fn new(args: RunArgs, store: Arc<Mutex<Store>>, log: Log) -> Self {
         Self {
             args,
             store,
+            log,
+
             show_windows: false,
+            show_log: true,
             show_satellites: true,
             show_location: true,
         }
@@ -117,6 +123,33 @@ impl eframe::App for App {
                 ui.label(format!("PDOP: {}", location.pdop));
                 ui.label(format!("HDOP: {}", location.hdop));
                 ui.label(format!("VDOP: {}", location.vdop));
+            });
+        }
+
+        if self.show_log {
+            Window::new("Log").show(ctx, |ui| {
+                let entries = self.log.entries();
+
+                ScrollArea::vertical().show(ui, |ui| {
+                    for (i, entry) in entries.iter().enumerate().rev() {
+                        let color = match entry.level {
+                            crate::log::LogLevel::Info => Color32::GRAY,
+                            crate::log::LogLevel::Warning => Color32::YELLOW,
+                            crate::log::LogLevel::Error => Color32::RED,
+                        };
+
+                        ui.push_id(i, |ui| {
+                            ui.label(
+                                RichText::new(format!(
+                                    "[{}] {}",
+                                    entry.timestamp.format("%H:%M:%S"),
+                                    entry.message
+                                ))
+                                .color(color),
+                            );
+                        });
+                    }
+                });
             });
         }
     }

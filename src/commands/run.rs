@@ -14,12 +14,14 @@ use crate::{
     app::App,
     args::RunArgs,
     error::ParseError,
+    log::Log,
     nmea_0183::{self, stores::Store},
 };
 
 pub fn run(args: &RunArgs) -> Result<()> {
-    let store = Arc::new(Mutex::new(Store::new()));
-    let app = App::new(args.clone(), store.clone());
+    let log = Log::new();
+    let store = Arc::new(Mutex::new(Store::new(log.clone())));
+    let app = App::new(args.clone(), store.clone(), log.clone());
 
     let serial = serialport::new(args.device.as_str(), args.baud_rate)
         .timeout(Duration::from_secs_f32(args.timeout))
@@ -35,11 +37,14 @@ pub fn run(args: &RunArgs) -> Result<()> {
         match msg {
             Ok(msg) => store.lock().handle(msg.message),
             Err(ParseError::UnknownType(..)) => {}
-            Err(err) => eprintln!(
-                "[-] NMEA Error: {:?}\n |  {}",
-                err,
-                str::from_utf8(&line[..end]).unwrap()
-            ),
+            Err(err) => {
+                log.warning(format!("NMEA Error: {:?}", err));
+                eprintln!(
+                    "[-] NMEA Error: {:?}\n |  {}",
+                    err,
+                    str::from_utf8(&line[..end]).unwrap()
+                )
+            }
         }
     });
 
