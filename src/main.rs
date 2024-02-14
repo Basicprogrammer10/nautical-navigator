@@ -6,8 +6,9 @@ mod app;
 mod args;
 mod commands;
 mod consts;
-mod log;
 mod error;
+mod iso_8211;
+mod log;
 mod misc;
 mod nmea_0183;
 
