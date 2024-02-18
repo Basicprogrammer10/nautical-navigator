@@ -12,4 +12,10 @@ pub enum Iso8211Error {
     InvalidFloat(#[from] num::ParseFloatError),
     #[error("Non UTF-8 character")]
     NonUtf8(#[from] std::str::Utf8Error),
+    #[error("IO error")]
+    Io(#[from] std::io::Error),
+    #[error("Unexpected byte: {0}")]
+    UnexpectedByte(u8),
+    #[error("Non UTF-8 encoded character")]
+    NonUtf8Char(#[from] std::string::FromUtf8Error),
 }
