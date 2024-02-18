@@ -1,6 +1,6 @@
 use std::str;
 
-use crate::error::ParseError;
+use super::error::Nmea0183Error;
 
 pub struct Parser<'a> {
     data: &'a [u8],
@@ -34,17 +34,17 @@ impl<'a> Parser<'a> {
         &self.data[start..self.index]
     }
 
-    pub fn assert_empty(&self) -> Result<(), ParseError> {
+    pub fn assert_empty(&self) -> Result<(), Nmea0183Error> {
         if self.index != self.data.len() {
-            return Err(ParseError::RemainingData);
+            return Err(Nmea0183Error::RemainingData);
         }
 
         Ok(())
     }
 
-    pub fn next(&mut self) -> Result<char, ParseError> {
+    pub fn next(&mut self) -> Result<char, Nmea0183Error> {
         if self.index >= self.data.len() {
-            return Err(ParseError::Incomplete);
+            return Err(Nmea0183Error::Incomplete);
         }
 
         let out = self.data[self.index] as char;
@@ -60,9 +60,9 @@ impl<'a> Parser<'a> {
         Some(self.data[self.index] as char)
     }
 
-    pub fn next_n(&mut self, n: usize) -> Result<&'a [u8], ParseError> {
+    pub fn next_n(&mut self, n: usize) -> Result<&'a [u8], Nmea0183Error> {
         if self.index + n >= self.data.len() {
-            return Err(ParseError::Incomplete);
+            return Err(Nmea0183Error::Incomplete);
         }
 
         let out = &self.data[self.index..self.index + n];
@@ -74,19 +74,19 @@ impl<'a> Parser<'a> {
         self.index += n;
     }
 
-    pub fn expect(&mut self, c: char) -> Result<(), ParseError> {
+    pub fn expect(&mut self, c: char) -> Result<(), Nmea0183Error> {
         if self.next()? != c {
-            return Err(ParseError::UnexpectedChar(c));
+            return Err(Nmea0183Error::UnexpectedChar(c));
         }
 
         Ok(())
     }
 
-    pub fn expect_bytes(&mut self, bytes: &[u8]) -> Result<(), ParseError> {
+    pub fn expect_bytes(&mut self, bytes: &[u8]) -> Result<(), Nmea0183Error> {
         let mut i = 0;
         while i < bytes.len() {
             if self.next()? != bytes[i] as char {
-                return Err(ParseError::UnexpectedChar(bytes[i] as char));
+                return Err(Nmea0183Error::UnexpectedChar(bytes[i] as char));
             }
 
             i += 1;
@@ -108,7 +108,7 @@ impl<'a> Parser<'a> {
         while self.skip_if(c) {}
     }
 
-    pub fn take_until(&mut self, c: char) -> Result<&'a [u8], ParseError> {
+    pub fn take_until(&mut self, c: char) -> Result<&'a [u8], Nmea0183Error> {
         let start = self.index;
         while self.next()? != c {}
 
@@ -126,7 +126,7 @@ impl<'a> Parser<'a> {
         std::str::from_utf8(&self.data[self.index..]).unwrap()
     }
 
-    pub fn parse<T: FromParser<'a>>(&mut self) -> Result<T, ParseError> {
+    pub fn parse<T: FromParser<'a>>(&mut self) -> Result<T, Nmea0183Error> {
         let res = T::parse(self);
         if let Some(c) = self.take_on_parse {
             let _ = self.expect(c);
@@ -136,39 +136,39 @@ impl<'a> Parser<'a> {
 }
 
 pub trait FromParser<'a>: Sized {
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError>;
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, Nmea0183Error>;
 }
 
 impl<'a> FromParser<'a> for u8 {
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, Nmea0183Error> {
         let bytes = parser.take_while(|c| c.is_ascii_digit());
         Ok(str::from_utf8(bytes)?.parse::<u8>()?)
     }
 }
 
 impl<'a> FromParser<'a> for i8 {
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, Nmea0183Error> {
         let bytes = parser.take_while(|c| matches!(c, '-' | '+' | '0'..='9'));
         Ok(str::from_utf8(bytes)?.parse::<i8>()?)
     }
 }
 
 impl<'a> FromParser<'a> for u16 {
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, Nmea0183Error> {
         let bytes = parser.take_while(|c| c.is_ascii_digit());
         Ok(str::from_utf8(bytes)?.parse::<u16>()?)
     }
 }
 
 impl<'a> FromParser<'a> for f32 {
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, Nmea0183Error> {
         let bytes = parser.take_while(|c| matches!(c, '.' | '-' | '+' | 'e' | 'E' | '0'..='9'));
         Ok(str::from_utf8(bytes)?.parse::<f32>()?)
     }
 }
 
 impl<'a> FromParser<'a> for String {
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, Nmea0183Error> {
         let bytes = parser.take_until_or_end(',');
 
         // Handle escape codes (^(ascii hex))
@@ -197,12 +197,12 @@ macro_rules! quick_parser {
     ($for:ty, {
         $($chr:literal => $variant:ident),*$(,)?
     }) => {
-        impl<'a> FromParser<'a> for $for {
-            fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+        impl<'a> crate::nmea_0183::parser::FromParser<'a> for $for {
+            fn parse(parser: &mut crate::nmea_0183::parser::Parser<'a>) -> Result<Self, crate::nmea_0183::Nmea0183Error> {
                 let chr = parser.next()?;
                 Ok(match chr {
                     $($chr => Self::$variant),*,
-                    _ => return Err(ParseError::UnexpectedChar(chr)),
+                    _ => return Err(crate::nmea_0183::Nmea0183Error::UnexpectedChar(chr)),
                 })
             }
         }

@@ -3,7 +3,7 @@ use std::num;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum ParseError {
+pub enum Nmea0183Error {
     #[error("The message is missing the `$` prefix")]
     MissingPrefix,
     #[error("The length of the input was not long enough")]

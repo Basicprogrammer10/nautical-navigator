@@ -1,6 +1,7 @@
-use crate::misc::parser::{FromParser, Parser};
-
-use super::ParseError;
+use super::{
+    parser::{FromParser, Parser},
+    Nmea0183Error,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub enum FaaMode {
@@ -37,8 +38,8 @@ impl FaaMode {
 }
 
 impl<'a> FromParser<'a> for FaaMode {
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, Nmea0183Error> {
         let chr = parser.next()?;
-        Self::from_char(chr).ok_or(ParseError::UnexpectedChar(chr))
+        Self::from_char(chr).ok_or(Nmea0183Error::UnexpectedChar(chr))
     }
 }

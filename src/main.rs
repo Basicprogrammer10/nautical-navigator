@@ -6,7 +6,6 @@ mod app;
 mod args;
 mod commands;
 mod consts;
-mod error;
 mod iso_8211;
 mod log;
 mod misc;

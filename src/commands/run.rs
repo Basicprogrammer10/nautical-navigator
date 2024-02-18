@@ -13,9 +13,8 @@ use parking_lot::Mutex;
 use crate::{
     app::App,
     args::RunArgs,
-    error::ParseError,
     log::Log,
-    nmea_0183::{self, stores::Store},
+    nmea_0183::{self, error::Nmea0183Error, stores::Store},
 };
 
 pub fn run(args: &RunArgs) -> Result<()> {
@@ -36,7 +35,7 @@ pub fn run(args: &RunArgs) -> Result<()> {
         let msg = nmea_0183::Message::parse(&line[..end]);
         match msg {
             Ok(msg) => store.lock().handle(msg.message),
-            Err(ParseError::UnknownType(..)) => {}
+            Err(Nmea0183Error::UnknownType(..)) => {}
             Err(err) => {
                 log.warning(format!("NMEA Error: {:?}", err));
                 eprintln!(

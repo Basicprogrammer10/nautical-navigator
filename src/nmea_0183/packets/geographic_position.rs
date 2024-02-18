@@ -1,9 +1,9 @@
 use crate::{
-    misc::parser::{FromParser, Parser},
+    nmea_0183::{
+        coordinate::Coordinate, error::Nmea0183Error, faa_mode::FaaMode, parser::Parser, time::Time,
+    },
     quick_parser,
 };
-
-use super::super::{coordinate::Coordinate, faa_mode::FaaMode, time::Time, ParseError};
 
 /// `ddmm.mm,a,dddmm.mm,a,hhmmss.ss,a,m
 #[derive(Debug)]
@@ -22,7 +22,7 @@ pub enum Status {
 }
 
 impl GeographicPosition {
-    pub fn parse(sentence: &[u8]) -> Result<GeographicPosition, ParseError> {
+    pub fn parse(sentence: &[u8]) -> Result<GeographicPosition, Nmea0183Error> {
         let mut parser = Parser::new(sentence).take_on_parse(',');
         let latitude = parser.parse::<Coordinate>()?;
         let longitude = parser.parse::<Coordinate>()?;

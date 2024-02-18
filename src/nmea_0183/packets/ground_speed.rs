@@ -1,4 +1,4 @@
-use crate::{error::ParseError, misc::parser::Parser, nmea_0183::faa_mode::FaaMode};
+use crate::nmea_0183::{error::Nmea0183Error, faa_mode::FaaMode, parser::Parser};
 
 #[derive(Debug)]
 pub struct GroundSpeed {
@@ -15,7 +15,7 @@ pub struct GroundSpeed {
 }
 
 impl GroundSpeed {
-    pub fn parse(sentence: &[u8]) -> Result<GroundSpeed, ParseError> {
+    pub fn parse(sentence: &[u8]) -> Result<GroundSpeed, Nmea0183Error> {
         let mut parser = Parser::new(sentence).take_on_parse(',');
         let course_true = parser.parse::<f32>().ok();
         parser.skip_if('T');

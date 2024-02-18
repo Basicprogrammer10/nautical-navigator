@@ -1,17 +1,17 @@
 use std::str;
 
-use crate::error::ParseError;
-
 use packets::geographic_position::GeographicPosition;
 
-use self::packets::{
+use self::{error::Nmea0183Error, packets::{
     active_satellites::ActiveSatellites, ground_speed::GroundSpeed,
     satellites_in_view::SatellitesInView, text::Text,
-};
+}};
 
 pub mod coordinate;
+pub mod error;
 pub mod faa_mode;
 pub mod packets;
+pub mod parser;
 pub mod stores;
 pub mod time;
 
@@ -54,13 +54,13 @@ fn checksum(sentence: &[u8]) -> u8 {
 
 impl Message {
     // TODO: Just use [u8]?
-    pub fn parse(bytes: &[u8]) -> Result<Message, ParseError> {
+    pub fn parse(bytes: &[u8]) -> Result<Message, Nmea0183Error> {
         if bytes[0] != b'$' {
-            return Err(ParseError::MissingPrefix);
+            return Err(Nmea0183Error::MissingPrefix);
         }
 
         if bytes.len() < 9 {
-            return Err(ParseError::IncorrectLength);
+            return Err(Nmea0183Error::IncorrectLength);
         }
 
         let check = &bytes[bytes.len() - 2..];
@@ -68,7 +68,7 @@ impl Message {
         let last = bytes.len() - 3;
         let calc = checksum(&bytes[0..last]);
         if calc != check {
-            return Err(ParseError::InvalidChecksum);
+            return Err(Nmea0183Error::InvalidChecksum);
         }
 
         let id = [bytes[1], bytes[2]];
@@ -81,7 +81,7 @@ impl Message {
             b"GSA" => Sentence::Gsa(ActiveSatellites::parse(to_parse)?),
             b"VTG" => Sentence::Vtg(GroundSpeed::parse(to_parse)?),
             b"TXT" => Sentence::Txt(Text::parse(to_parse)?),
-            _ => return Err(ParseError::UnknownType(packet_type)),
+            _ => return Err(Nmea0183Error::UnknownType(packet_type)),
         };
 
         Ok(Self {

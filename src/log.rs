@@ -1,4 +1,4 @@
-use std::{borrow::Cow, sync::Arc, time::SystemTime};
+use std::{borrow::Cow, sync::Arc};
 
 use chrono::Local;
 use parking_lot::{Mutex, MutexGuard};
@@ -26,7 +26,7 @@ impl Log {
             entries: Arc::new(Mutex::new(vec![LogEntry {
                 message: "Starting Nautical Navigator".into(),
                 level: LogLevel::Info,
-                timestamp: Local::now()
+                timestamp: Local::now(),
             }])),
         }
     }

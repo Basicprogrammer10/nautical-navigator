@@ -1,6 +1,6 @@
-use crate::{
-    error::ParseError,
-    misc::parser::{FromParser, Parser},
+use crate::nmea_0183::{
+    error::Nmea0183Error,
+    parser::{FromParser, Parser},
 };
 
 #[derive(Debug)]
@@ -28,7 +28,7 @@ pub struct Satellite {
 }
 
 impl SatellitesInView {
-    pub fn parse(sentence: &[u8]) -> Result<SatellitesInView, ParseError> {
+    pub fn parse(sentence: &[u8]) -> Result<SatellitesInView, Nmea0183Error> {
         let mut parser = Parser::new(sentence).take_on_parse(',');
 
         let total_in_group = parser.parse::<u8>()?;
@@ -39,7 +39,7 @@ impl SatellitesInView {
         for _ in 0..4 {
             match parser.parse::<Satellite>() {
                 Ok(satellite) => satellites.push(satellite),
-                Err(ParseError::Incomplete) => break,
+                Err(Nmea0183Error::Incomplete) => break,
                 Err(err) => return Err(err),
             }
         }
@@ -56,8 +56,8 @@ impl SatellitesInView {
 }
 
 impl<'a> FromParser<'a> for Satellite {
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
-        let id = parser.parse::<u8>().ok().ok_or(ParseError::Incomplete)?;
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, Nmea0183Error> {
+        let id = parser.parse::<u8>().ok().ok_or(Nmea0183Error::Incomplete)?;
         let elevation = parser.parse::<i8>().ok();
         let azimuth = parser.parse::<u16>().ok();
         let snr = parser.parse::<u8>().ok();

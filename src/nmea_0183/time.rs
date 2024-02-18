@@ -1,8 +1,6 @@
 use std::{fmt::Debug, str};
 
-use crate::misc::parser::{FromParser, Parser};
-
-use super::ParseError;
+use super::{error::Nmea0183Error, parser::{FromParser, Parser}};
 
 /// In UTC.
 #[derive(Clone, Copy)]
@@ -24,7 +22,7 @@ impl Time {
 
 impl<'a> FromParser<'a> for Time {
     // Parses a time from "hhmmss.ss";
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, Nmea0183Error> {
         let hour = parser.next_n(2)?;
         let min = parser.next_n(2)?;
         let sec = parser.take_until_or_end(',');

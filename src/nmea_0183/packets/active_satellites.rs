@@ -1,6 +1,5 @@
 use crate::{
-    error::ParseError,
-    misc::parser::{FromParser, Parser},
+    nmea_0183::{error::Nmea0183Error, parser::Parser},
     quick_parser,
 };
 
@@ -42,7 +41,7 @@ pub enum Fix {
 }
 
 impl ActiveSatellites {
-    pub fn parse(sentence: &[u8]) -> Result<ActiveSatellites, ParseError> {
+    pub fn parse(sentence: &[u8]) -> Result<ActiveSatellites, Nmea0183Error> {
         let mut parser = Parser::new(sentence).take_on_parse(',');
         let selection = parser.parse::<SelectionMode>()?;
         let mode = parser.parse::<Fix>()?;

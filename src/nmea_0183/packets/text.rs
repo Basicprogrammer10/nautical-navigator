@@ -1,4 +1,4 @@
-use crate::{error::ParseError, misc::parser::Parser};
+use crate::nmea_0183::{error::Nmea0183Error, parser::Parser};
 
 #[derive(Debug)]
 pub struct Text {
@@ -9,7 +9,7 @@ pub struct Text {
 }
 
 impl Text {
-    pub fn parse(sentence: &[u8]) -> Result<Text, ParseError> {
+    pub fn parse(sentence: &[u8]) -> Result<Text, Nmea0183Error> {
         let mut parser = Parser::new(sentence).take_on_parse(',');
 
         let total_sentences = parser.parse::<u8>()?;

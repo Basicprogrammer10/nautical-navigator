@@ -1,1 +1,2 @@
-mod leader;
+pub mod leader;
+pub mod error;

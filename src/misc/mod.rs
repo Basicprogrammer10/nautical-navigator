@@ -1,4 +1,3 @@
 pub mod average;
 pub mod delayed;
 pub mod nullable;
-pub mod parser;

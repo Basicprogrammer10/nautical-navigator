@@ -1,8 +1,9 @@
 use std::{fmt::Debug, str};
 
-use crate::misc::parser::{FromParser, Parser};
-
-use super::ParseError;
+use super::{
+    parser::{FromParser, Parser},
+    Nmea0183Error,
+};
 
 /// `ddmm.mm,d`
 #[derive(Clone, Copy)]
@@ -18,7 +19,7 @@ impl Coordinate {
 
 impl<'a> FromParser<'a> for Coordinate {
     // TODO: Fix returning 0.0 when there is no coordinate
-    fn parse(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
+    fn parse(parser: &mut Parser<'a>) -> Result<Self, Nmea0183Error> {
         if matches!(parser.peek(), Some(',') | None) {
             parser.skip_if(',');
             return Ok(Self { degree: 0.0 });
@@ -31,7 +32,7 @@ impl<'a> FromParser<'a> for Coordinate {
         let direction = parser.next()?;
 
         if !matches!(direction, 'N' | 'S' | 'E' | 'W') {
-            return Err(ParseError::UnexpectedChar(direction));
+            return Err(Nmea0183Error::UnexpectedChar(direction));
         }
 
         let degrees = str::from_utf8(degrees)?.parse::<f32>()?;
